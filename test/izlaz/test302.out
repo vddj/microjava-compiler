@@ -1,0 +1,305 @@
+Buildfile: C:\Users\PC\Documents\ETF\PP\pp1lab.template\pp1lab.templateAST\workspace\MJCompiler\build.xml
+disasm:
+     [java] codeSize=585
+     [java] dataSize=5
+     [java] mainPC=67
+     [java] 0: enter 1 1
+     [java] 3: load_0
+     [java] 4: exit
+     [java] 5: return
+     [java] 6: enter 1 1
+     [java] 9: load_0
+     [java] 10: arraylength
+     [java] 11: exit
+     [java] 12: return
+     [java] 13: enter 2 2
+     [java] 16: load_1
+     [java] 17: load_0
+     [java] 18: add
+     [java] 19: exit
+     [java] 20: return
+     [java] 21: exit
+     [java] 22: return
+     [java] 23: enter 2 3
+     [java] 26: load_0
+     [java] 27: const_1
+     [java] 28: jne -28 (=0)
+     [java] 31: const_1
+     [java] 32: store_2
+     [java] 33: load_0
+     [java] 34: const_2
+     [java] 35: jne 8 (=43)
+     [java] 38: load_1
+     [java] 39: store_2
+     [java] 40: jmp 3 (=43)
+     [java] 43: load_1
+     [java] 44: load_2
+     [java] 45: call -32 (=13)
+     [java] 48: exit
+     [java] 49: return
+     [java] 50: exit
+     [java] 51: return
+     [java] 52: enter 0 0
+     [java] 55: const 118
+     [java] 60: const_1
+     [java] 61: bprint
+     [java] 62: const_0
+     [java] 63: exit
+     [java] 64: return
+     [java] 65: exit
+     [java] 66: return
+     [java] 67: enter 0 0
+     [java] 70: const_1
+     [java] 71: const_1
+     [java] 72: jeq 13 (=85)
+     [java] 75: const 6
+     [java] 80: const_5
+     [java] 81: print
+     [java] 82: jmp 6 (=88)
+     [java] 85: const_0
+     [java] 86: const_5
+     [java] 87: print
+     [java] 88: const_0
+     [java] 89: putstatic 1
+     [java] 92: const_0
+     [java] 93: putstatic 0
+     [java] 96: getstatic 0
+     [java] 99: const_2
+     [java] 100: jne 10 (=110)
+     [java] 103: const_1
+     [java] 104: putstatic 1
+     [java] 107: jmp 3 (=110)
+     [java] 110: getstatic 0
+     [java] 113: const_1
+     [java] 114: add
+     [java] 115: putstatic 0
+     [java] 118: getstatic 0
+     [java] 121: const_5
+     [java] 122: jlt -26 (=96)
+     [java] 125: getstatic 1
+     [java] 128: const_1
+     [java] 129: jne -129 (=0)
+     [java] 132: getstatic 0
+     [java] 135: const_5
+     [java] 136: jne 9 (=145)
+     [java] 139: const_1
+     [java] 140: const_5
+     [java] 141: print
+     [java] 142: jmp 6 (=148)
+     [java] 145: const_1
+     [java] 146: const_5
+     [java] 147: print
+     [java] 148: new 8
+     [java] 151: putstatic 3
+     [java] 154: getstatic 3
+     [java] 157: const_2
+     [java] 158: putfield 1
+     [java] 161: getstatic 3
+     [java] 164: const_3
+     [java] 165: newarray 1
+     [java] 167: putfield 0
+     [java] 170: getstatic 3
+     [java] 173: getfield 0
+     [java] 176: const_0
+     [java] 177: const_1
+     [java] 178: getstatic 3
+     [java] 181: getfield 1
+     [java] 184: mul
+     [java] 185: astore
+     [java] 186: getstatic 3
+     [java] 189: getfield 0
+     [java] 192: const_1
+     [java] 193: const_2
+     [java] 194: getstatic 3
+     [java] 197: getfield 1
+     [java] 200: mul
+     [java] 201: astore
+     [java] 202: getstatic 3
+     [java] 205: getfield 0
+     [java] 208: const_2
+     [java] 209: getstatic 3
+     [java] 212: getfield 0
+     [java] 215: const_1
+     [java] 216: aload
+     [java] 217: getstatic 3
+     [java] 220: getfield 0
+     [java] 223: const_0
+     [java] 224: aload
+     [java] 225: call -212 (=13)
+     [java] 228: getstatic 3
+     [java] 231: getfield 1
+     [java] 234: mul
+     [java] 235: const_1
+     [java] 236: add
+     [java] 237: astore
+     [java] 238: call -186 (=52)
+     [java] 241: const_1
+     [java] 242: jne 28 (=270)
+     [java] 245: getstatic 3
+     [java] 248: getfield 0
+     [java] 251: const_2
+     [java] 252: aload
+     [java] 253: const_4
+     [java] 254: jne 16 (=270)
+     [java] 257: const 65
+     [java] 262: call -262 (=0)
+     [java] 265: const_5
+     [java] 266: print
+     [java] 267: jmp 13 (=280)
+     [java] 270: const 97
+     [java] 275: call -275 (=0)
+     [java] 278: const_5
+     [java] 279: print
+     [java] 280: const 10
+     [java] 285: const_1
+     [java] 286: bprint
+     [java] 287: const_0
+     [java] 288: putstatic 0
+     [java] 291: getstatic 0
+     [java] 294: const_3
+     [java] 295: jne 17 (=312)
+     [java] 298: getstatic 0
+     [java] 301: const_1
+     [java] 302: add
+     [java] 303: putstatic 0
+     [java] 306: jmp 27 (=333)
+     [java] 309: jmp 3 (=312)
+     [java] 312: getstatic 0
+     [java] 315: const_4
+     [java] 316: jne 9 (=325)
+     [java] 319: jmp 25 (=344)
+     [java] 322: jmp 3 (=325)
+     [java] 325: getstatic 0
+     [java] 328: const_1
+     [java] 329: add
+     [java] 330: putstatic 0
+     [java] 333: getstatic 0
+     [java] 336: const 10
+     [java] 341: jlt -50 (=291)
+     [java] 344: getstatic 0
+     [java] 347: const_3
+     [java] 348: jne 16 (=364)
+     [java] 351: call -299 (=52)
+     [java] 354: const_1
+     [java] 355: jne 9 (=364)
+     [java] 358: const_4
+     [java] 359: const_5
+     [java] 360: print
+     [java] 361: jmp 6 (=367)
+     [java] 364: const_4
+     [java] 365: const_5
+     [java] 366: print
+     [java] 367: const 10
+     [java] 372: const_1
+     [java] 373: bprint
+     [java] 374: getstatic 3
+     [java] 377: getfield 0
+     [java] 380: const_0
+     [java] 381: aload
+     [java] 382: getstatic 3
+     [java] 385: getfield 0
+     [java] 388: const_1
+     [java] 389: aload
+     [java] 390: call -377 (=13)
+     [java] 393: getstatic 3
+     [java] 396: getfield 0
+     [java] 399: const_2
+     [java] 400: aload
+     [java] 401: call -388 (=13)
+     [java] 404: const_5
+     [java] 405: print
+     [java] 406: const 10
+     [java] 411: const_1
+     [java] 412: bprint
+     [java] 413: new 8
+     [java] 416: putstatic 4
+     [java] 419: getstatic 4
+     [java] 422: const_3
+     [java] 423: putfield 1
+     [java] 426: getstatic 4
+     [java] 429: const_3
+     [java] 430: newarray 1
+     [java] 432: putfield 0
+     [java] 435: const_0
+     [java] 436: putstatic 0
+     [java] 439: getstatic 4
+     [java] 442: getfield 0
+     [java] 445: getstatic 0
+     [java] 448: getstatic 3
+     [java] 451: getfield 0
+     [java] 454: getstatic 0
+     [java] 457: aload
+     [java] 458: const_2
+     [java] 459: mul
+     [java] 460: getstatic 4
+     [java] 463: getfield 1
+     [java] 466: mul
+     [java] 467: astore
+     [java] 468: getstatic 0
+     [java] 471: const_1
+     [java] 472: add
+     [java] 473: putstatic 0
+     [java] 476: getstatic 0
+     [java] 479: const_3
+     [java] 480: jlt -41 (=439)
+     [java] 483: getstatic 4
+     [java] 486: getfield 0
+     [java] 489: const_0
+     [java] 490: aload
+     [java] 491: const_5
+     [java] 492: print
+     [java] 493: getstatic 4
+     [java] 496: getfield 0
+     [java] 499: const_1
+     [java] 500: aload
+     [java] 501: const_5
+     [java] 502: print
+     [java] 503: getstatic 4
+     [java] 506: getfield 0
+     [java] 509: const_2
+     [java] 510: aload
+     [java] 511: const_5
+     [java] 512: print
+     [java] 513: const 10
+     [java] 518: const_1
+     [java] 519: bprint
+     [java] 520: const_0
+     [java] 521: putstatic 0
+     [java] 524: const_0
+     [java] 525: putstatic 2
+     [java] 528: getstatic 2
+     [java] 531: getstatic 3
+     [java] 534: getfield 0
+     [java] 537: getstatic 0
+     [java] 540: aload
+     [java] 541: getstatic 4
+     [java] 544: getfield 0
+     [java] 547: getstatic 0
+     [java] 550: aload
+     [java] 551: mul
+     [java] 552: add
+     [java] 553: putstatic 2
+     [java] 556: getstatic 0
+     [java] 559: const_1
+     [java] 560: add
+     [java] 561: putstatic 0
+     [java] 564: getstatic 0
+     [java] 567: const_3
+     [java] 568: jlt -40 (=528)
+     [java] 571: getstatic 2
+     [java] 574: const_5
+     [java] 575: print
+     [java] 576: const 10
+     [java] 581: const_1
+     [java] 582: bprint
+     [java] 583: exit
+     [java] 584: return
+runObj:
+     [java]     0    1v   97
+     [java]     4
+     [java]    19
+     [java]    12   24   78
+     [java]  1134
+     [java] Completion took 1 ms
+BUILD SUCCESSFUL
+Total time: 491 milliseconds

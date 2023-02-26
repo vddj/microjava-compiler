@@ -1,0 +1,137 @@
+Buildfile: C:\Users\PC\Documents\ETF\PP\pp1lab.template\pp1lab.templateAST\workspace\MJCompiler\build.xml
+disasm:
+     [java] codeSize=179
+     [java] dataSize=2
+     [java] mainPC=13
+     [java] 0: enter 1 1
+     [java] 3: load_0
+     [java] 4: exit
+     [java] 5: return
+     [java] 6: enter 1 1
+     [java] 9: load_0
+     [java] 10: arraylength
+     [java] 11: exit
+     [java] 12: return
+     [java] 13: enter 0 2
+     [java] 16: const_0
+     [java] 17: store_0
+     [java] 18: load_0
+     [java] 19: const_1
+     [java] 20: add
+     [java] 21: store_0
+     [java] 22: load_0
+     [java] 23: const_1
+     [java] 24: add
+     [java] 25: store_0
+     [java] 26: load_0
+     [java] 27: const_5
+     [java] 28: mul
+     [java] 29: store_0
+     [java] 30: load_0
+     [java] 31: const_1
+     [java] 32: sub
+     [java] 33: store_0
+     [java] 34: load_0
+     [java] 35: const_5
+     [java] 36: print
+     [java] 37: const_3
+     [java] 38: newarray 1
+     [java] 40: putstatic 0
+     [java] 43: getstatic 0
+     [java] 46: const_0
+     [java] 47: const_1
+     [java] 48: astore
+     [java] 49: getstatic 0
+     [java] 52: const_1
+     [java] 53: const_2
+     [java] 54: astore
+     [java] 55: getstatic 0
+     [java] 58: getstatic 0
+     [java] 61: const_1
+     [java] 62: aload
+     [java] 63: getstatic 0
+     [java] 66: getstatic 0
+     [java] 69: const_0
+     [java] 70: aload
+     [java] 71: aload
+     [java] 72: const_3
+     [java] 73: mul
+     [java] 74: astore
+     [java] 75: getstatic 0
+     [java] 78: const_2
+     [java] 79: aload
+     [java] 80: getstatic 0
+     [java] 83: const_0
+     [java] 84: aload
+     [java] 85: div
+     [java] 86: store_0
+     [java] 87: load_0
+     [java] 88: const_5
+     [java] 89: print
+     [java] 90: getstatic 0
+     [java] 93: const_2
+     [java] 94: aload
+     [java] 95: const_5
+     [java] 96: print
+     [java] 97: const_3
+     [java] 98: newarray 0
+     [java] 100: putstatic 1
+     [java] 103: getstatic 1
+     [java] 106: const_0
+     [java] 107: const 97
+     [java] 112: bastore
+     [java] 113: getstatic 1
+     [java] 116: const_1
+     [java] 117: const 98
+     [java] 122: bastore
+     [java] 123: getstatic 1
+     [java] 126: const_5
+     [java] 127: const_3
+     [java] 128: sub
+     [java] 129: const 99
+     [java] 134: bastore
+     [java] 135: getstatic 1
+     [java] 138: const_1
+     [java] 139: baload
+     [java] 140: const_1
+     [java] 141: bprint
+     [java] 142: getstatic 1
+     [java] 145: const_1
+     [java] 146: const_2
+     [java] 147: mul
+     [java] 148: baload
+     [java] 149: const_1
+     [java] 150: bprint
+     [java] 151: load_0
+     [java] 152: const_5
+     [java] 153: const_1
+     [java] 154: mul
+     [java] 155: const_1
+     [java] 156: sub
+     [java] 157: load_0
+     [java] 158: mul
+     [java] 159: add
+     [java] 160: const_3
+     [java] 161: const_2
+     [java] 162: rem
+     [java] 163: const_3
+     [java] 164: const_2
+     [java] 165: mul
+     [java] 166: add
+     [java] 167: const_3
+     [java] 168: sub
+     [java] 169: sub
+     [java] 170: store_0
+     [java] 171: load_0
+     [java] 172: const_5
+     [java] 173: print
+     [java] 174: load_0
+     [java] 175: const_5
+     [java] 176: print
+     [java] 177: exit
+     [java] 178: return
+runObj:
+     [java]     9    6    6bc   26   26
+     [java] Completion took 0 ms
+BUILD SUCCESSFUL
+Total time: 438 milliseconds

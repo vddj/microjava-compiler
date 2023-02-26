@@ -1,0 +1,343 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+parser code {:
+
+	boolean errorDetected;
+	
+	Logger log = Logger.getLogger(getClass());
+   
+   
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+     
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+  
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+  
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+
+:}
+
+init with {:
+	errorDetected = false;
+:}
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null) 
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal PROGRAM, BREAK, CLASS, ELSE, CONST, IF, DO, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE;
+terminal RECORD, TARABA, FINAL;
+terminal PLUS, MINUS, PUTA, KOSACRTA, PROCENAT, JEDNAKOST, NEJEDNAKOST, VECE, VECEJEDNAKO, MANJE, MANJEJEDNAKO;
+terminal AND, OR, DODELAVR, PLUSPLUS, MINUSMINUS, TACKAZAREZ, ZAREZ, TACKA;
+terminal OBICNA_ZAGRADA_L, OBICNA_ZAGRADA_D, UGLASTA_ZAGRADA_L, UGLASTA_ZAGRADA_D, VITICASTA_ZAGRADA_L, VITICASTA_ZAGRADA_D;
+terminal ENUM, SUPER, THIS, DVOTACKA, GOTO, PLUSPLUSPLUS, MAJMUNCE, KAPICA;
+
+terminal String ident, boolConst;
+terminal Integer numConst;
+terminal Character charConst;
+
+nonterminal ConstDecl, VarDecl, Constructor;
+nonterminal ConstructorDecl, FormPars, SingleStatement, Statement, ConstSome;
+nonterminal Statements, ElseA, RestDesignator, ActPars, Condition, CondTerm, CondFact;
+nonterminal TermFragment, FactorFrag2, DesExpr, Assignop, Relop, Addop, Mulop;
+nonterminal Zagrade, FormParsA, ExtendsA, NumConstA, MinusA, CondA;
+nonterminal DeclList, ConstDeclList, VarList, VarDeclList, StatementList, MethodDeclList, FormList;
+nonterminal OrList, AndList, ExprFragmentList, DesList, Matched, Unmatched;
+nonterminal CondFact1, CondFact2, DoStatement, WhileStatement, IfUslov, Zagrade2, Expop, BaseExpFragment, FinalDef;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj ProgName, Program, MethodDecl, MethodTypeName, ClassDecl, ClassDeclName, RecordDecl, RecordDeclName, Designator;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, DesignatorStatement, BaseExp;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, TypeWhat, Expr, ExprA, Term, ExprInt; 
+												
+/********** glavni deo ...... **********/
+
+//Program = "program" ident {ConstDecl | VarDecl | ClassDecl | RecordDecl} "{" {MethodDecl} "}"
+Program ::= (Program) PROGRAM ProgName:p DeclList VITICASTA_ZAGRADA_L MethodDeclList VITICASTA_ZAGRADA_D ;
+
+ProgName ::= (ProgName) ident:progName;
+
+DeclList ::= (DeclListConst) DeclList ConstDecl 
+			| (DeclListVar) DeclList VarDecl 
+			| (DeclListClass) DeclList ClassDecl 
+			| (DeclListRecord) DeclList RecordDecl
+			| (NoDecl) /* epsilon */
+			;
+
+MethodDeclList ::= (MethodDeclListYes) MethodDeclList MethodDecl
+				| (NoMethodDecl) /* epsilon */
+				;
+				
+// ConstDecl = "const" Type ident"="(numConst | charConst | boolConst) {, ident "=" (numConst | charConst | boolConst)} ";"
+ConstDecl ::= (ConstDeclNum) CONST Type ident:constName DODELAVR numConst:value ConstDeclList TACKAZAREZ
+			| (ConstDeclChar) CONST Type ident:constName DODELAVR charConst:value ConstDeclList TACKAZAREZ
+			| (ConstDeclBool) CONST Type ident:constName DODELAVR boolConst:value ConstDeclList TACKAZAREZ ;
+
+ConstDeclList ::= (ConstDeclListNum) ConstDeclList ZAREZ ident:constName DODELAVR numConst:value
+			| (ConstDeclListChar) ConstDeclList ZAREZ ident:constName DODELAVR charConst:value
+			| (ConstDeclListBool) ConstDeclList ZAREZ ident:constName DODELAVR boolConst:value
+			| (NoConstDecl) /* epsilon */
+			;
+
+// VarDecl = Type ident ["[" "]"] {"," ident ["[" "]"]} ";"			
+VarDecl ::= (VarDecl) FinalDef Type:varType ident:varName Zagrade VarList TACKAZAREZ ;
+
+FinalDef ::= (FinalDefYes) FINAL
+			| (FinalDefNo) /* epsilon */
+			;
+
+Zagrade ::= (ZagradeOne) Zagrade UGLASTA_ZAGRADA_L UGLASTA_ZAGRADA_D
+			| (ZagradeNoOne) /* epsilon */
+			;
+
+VarList ::= (VarListYes) VarList ZAREZ ident:VarName Zagrade
+			| (NoVarList) /* epsilon */
+			;
+
+// ClassDecl = "class" ident ["extends" Type] "{" {VarDecl} ["{" [ConstructorDecl] {MethodDecl} "}"] "}"			
+ClassDecl ::= (ClassDecl) CLASS ClassDeclName ExtendsA VITICASTA_ZAGRADA_L VarDeclList Constructor VITICASTA_ZAGRADA_D;
+
+ClassDeclName ::= (ClassDeclName) ident:className;
+
+ExtendsA ::= (ExtendsOne) EXTENDS Type 
+			| (ExtendsNoOne) /* epsilon */
+			;
+
+VarDeclList ::= (VarDeclListYes) VarDeclList VarDecl
+			| (NoVarDeclList) /* epsilon */
+			;
+			
+Constructor ::= (ConstructorYes) VITICASTA_ZAGRADA_L MethodDeclList VITICASTA_ZAGRADA_D
+			| (NoConstructor) /* epsilon */
+			;
+
+// RecordDecl = "record" ident "{" {VarDecl} "}" * za B i C nivo			
+RecordDecl ::= (RecordDecl) RECORD RecordDeclName VITICASTA_ZAGRADA_L VarDeclList VITICASTA_ZAGRADA_D;
+
+RecordDeclName ::= (RecordDeclName) ident:RecordName;
+
+// ConstructorDecl = ident "(" ")" {VarDecl} "{" {Statement} "}". * za C nivo
+ConstructorDecl ::= (ConstructorDecl) ident OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D VarDeclList VITICASTA_ZAGRADA_L StatementList VITICASTA_ZAGRADA_D;
+
+StatementList ::= (StatementListYes) StatementList Statement
+				| (NoStatementList) /* epsilon*/
+				;
+
+//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} "{" {Statement} "}"
+MethodDecl ::= (MethodDecl) MethodTypeName OBICNA_ZAGRADA_L FormParsA OBICNA_ZAGRADA_D VarDeclList VITICASTA_ZAGRADA_L StatementList VITICASTA_ZAGRADA_D;
+
+MethodTypeName ::= (MethodTypeName) TypeWhat:retType ident:methName;
+
+TypeWhat ::= (TypeWhatType) Type:typeName | (TypeWhatVoid) VOID;
+
+FormParsA ::= (FormParsOne) FormPars
+			| (FormParsNoOne) /* epsilon */
+			;
+			
+// FormPars = Type ident ["[" "]"] {"," Type ident ["[" "]"]}
+FormPars ::= (FormPars) Type:varType ident:varName Zagrade FormList;
+
+FormList ::= (FormListYes) FormList ZAREZ Type:varType ident:varName Zagrade
+			| (NoFormList) /* epsilon */
+			;	
+			
+// Type = ident
+Type ::= (Type) ident:typeName;
+
+// Statement = [Label ":"] SingleStatement * za A nivo | Statements.
+Statement ::= (MatchedStm) Matched 
+			| (UnmatchedStm) Unmatched
+			;
+//			(StatementOne) SingleStatement
+//			| (StatementMore) Statements
+//			;
+
+//SingleStatement = DesignatorStatement ";" 
+//		| "if" "(" Condition ")" Statement ["else" Statement] 
+//		| "do" Statement "while " "(" Condition ")" ";"
+//		| "break" ";"
+//		| "continue" ";"
+//		| "return" [Expr] ";"
+//		| "read" "(" Designator ")" ";"
+//		| "print" "(" Expr ["," numConst] ")" ";"
+//		| "goto" Label ";" * za nivo A
+
+//SingleStatement ::= 
+
+Unmatched ::= (UnmatchedIf) IfUslov OBICNA_ZAGRADA_L Condition OBICNA_ZAGRADA_D Statement
+			| (UnmatchedIfElse) IfUslov OBICNA_ZAGRADA_L Condition OBICNA_ZAGRADA_D Matched ELSE Unmatched
+		 	;
+
+Matched ::= (SingleStatementDes) DesignatorStatement TACKAZAREZ
+			| (SingleStatementIf) IfUslov OBICNA_ZAGRADA_L Condition OBICNA_ZAGRADA_D Matched ELSE Matched
+			| (SingleStatementDo) DoStatement Statement WhileStatement OBICNA_ZAGRADA_L Condition OBICNA_ZAGRADA_D TACKAZAREZ
+			| (SingleStatementBreak) BREAK TACKAZAREZ
+			| (SingleStatementContinue) CONTINUE TACKAZAREZ
+			| (SingleStatementReturn) RETURN Expr TACKAZAREZ
+			| (SingleStatementReturnNothing) RETURN TACKAZAREZ
+			| (SingleStatementRead) READ OBICNA_ZAGRADA_L Designator OBICNA_ZAGRADA_D TACKAZAREZ
+			| (SingleStatementPrint) PRINT OBICNA_ZAGRADA_L Expr NumConstA OBICNA_ZAGRADA_D TACKAZAREZ
+			| (ErrorStmt) error TACKAZAREZ:l
+			{: parser.report_error("Izvrsen oporavak do ; u liniji " + lleft, null);  :}
+			| (MatchedStatements) Statements
+			;
+
+IfUslov ::= (IfUslov) IF;
+DoStatement ::= (DoStatement) DO;
+WhileStatement ::= (WhileStatement) WHILE;
+
+ExprA ::= (ExprOne) Expr 
+			| (ExprNoOne) /* epsilon */
+			;
+
+NumConstA ::= (NumConstOne) ZAREZ numConst
+			| (NumConstNoOne) /* epsilon */
+			;
+
+// Statements = "{" {Statement} "}"								
+Statements ::= (Statements) VITICASTA_ZAGRADA_L StatementList VITICASTA_ZAGRADA_D;
+
+// DesignatorStatement = Designator (Assignop Expr | "(" [ActPars] ")" | "++" | "--")
+DesignatorStatement ::= (DesAssign) Designator Assignop Expr 
+					| (DesZagrade) Designator OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D 
+					| (DesActPars) Designator OBICNA_ZAGRADA_L ActPars OBICNA_ZAGRADA_D 
+					| (DesPlus) Designator PLUSPLUS 
+					| (DesPlusPlus) Designator PLUSPLUSPLUS
+					| (DesMinus) Designator MINUSMINUS
+					| (DesTaraba) Designator TARABA
+					;
+
+// ActPars = Expr {"," Expr}			
+ActPars ::= (ActParsOne) Expr
+			| (ActParsMany) ActPars ZAREZ Expr
+			;
+
+// Condition = CondTerm {"||" CondTerm}
+Condition ::= (Condition) CondTerm OrList;
+
+OrList ::= (OrListYes) OrList OR CondTerm 
+			| (NoOrList) /* epsilon */
+			;
+
+// CondTerm = CondFact {"&&" CondFact}
+CondTerm ::= (CondTerm) CondFact AndList;
+
+AndList ::= (AndListYes) AndList AND CondFact
+			| (NoAndList) /* epsilon */
+			;
+
+// CondFact = Expr [Relop Expr]		
+CondFact ::= (CondFactOne) Expr
+			| (CondFactTwo) Expr:leftExpr Relop Expr:RightExpr
+			;
+
+// Expr = ["-"] Term {Addop Term}
+Expr ::= (Expr) MinusA Term ExprFragmentList;
+
+MinusA ::= (MinusOne) MINUS 
+			| (MinusNoOne) /* epsilon */
+			;
+
+ExprFragmentList ::= (ExprFragmentListYes) ExprFragmentList Addop Term 
+			| (NoExprFragmentList) /* epsilon */
+			;
+
+//Term = Factor {Mulop Factor}		
+Term ::= (Term) Factor TermFragment;
+
+TermFragment ::= (TermFragList) TermFragment Mulop Factor
+			| (NoTermFragment) /* epsilon */
+			;
+
+//Factor = BaseExp {Expop BaseExp}
+Factor ::= (Factor) BaseExp BaseExpFragment;
+
+BaseExpFragment ::= (BaseExpFragmentList) BaseExpFragment Expop BaseExp
+			| (NoBaseExpFragment) /* epsilon */
+			;
+
+
+//Expop = "^"
+Expop ::= (KapicaExpr) KAPICA;
+
+//BaseExp = Designator ["(" [ActPars] ")"]
+//		| numConst
+//		| charConst
+//		| boolConst
+//		| "new" Type ["[" Expr "]"]
+//		| "(" Expr ")"
+BaseExp ::= (FactorDes) Designator
+			| (FactorDesZagr) Designator OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D
+			| (FactorDesActPars) Designator OBICNA_ZAGRADA_L ActPars OBICNA_ZAGRADA_D
+			| (FactorNum) numConst:value
+			| (FactorChar) charConst:value
+			| (FactorBool) boolConst:value
+			| (FactorType) NEW Type Zagrade2
+			| (FactorExpr) OBICNA_ZAGRADA_L ExprInt OBICNA_ZAGRADA_D
+			| (FactorTaraba) Designator TARABA
+			;
+
+Zagrade2 ::= (ZagradeOne2) Zagrade2 UGLASTA_ZAGRADA_L ExprInt UGLASTA_ZAGRADA_D
+			| (ZagradeNoOne2) /* epsilon */
+			;
+
+ConstSome ::= (ConstSomeNum) numConst:value 
+			| (ConstSomeChar) charConst:value 
+			| (ConstSomeBool) boolConst:value ;
+
+// Designator = ident {"." ident | "[" Expr "]"}
+Designator ::= (DesignatorOne) ident:Name
+			| (DesignatorField) Designator TACKA ident:fieldName
+			| (DesignatorArray) Designator UGLASTA_ZAGRADA_L ExprInt UGLASTA_ZAGRADA_D
+			;
+
+ExprInt ::= (ExprInt) Expr;
+
+// Label = ident
+//Label ::= (Label) ident;
+
+// Assignop = "="
+Assignop ::= (Assignop) DODELAVR;
+
+// Relop = "==" | "!=" | ">" | ">=" | "<" | "<="
+Relop ::= (RelopJed) JEDNAKOST 
+			| (RelopNejed) NEJEDNAKOST 
+			| (RelopVece) VECE 
+			| (RelopVecJed) VECEJEDNAKO 
+			| (RelopManje) MANJE 
+			| (RelopManjeJed) MANJEJEDNAKO
+			;
+
+// Addop = "+" | "-"
+Addop ::= (AddopPlus) PLUS 
+		| (AddopMinus) MINUS
+		;
+
+// Mulop = "*" | "/" | "%"
+Mulop ::= (MulopPuta) PUTA 
+		| (MulopKosa) KOSACRTA 
+		| (MulopProc) PROCENAT
+		| (MulopMajmunce) MAJMUNCE 
+		;

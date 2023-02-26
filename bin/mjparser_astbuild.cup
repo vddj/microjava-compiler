@@ -1,0 +1,385 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+parser code {:
+
+	boolean errorDetected;
+	
+	Logger log = Logger.getLogger(getClass());
+   
+   
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+     
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+  
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+  
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+
+:}
+
+init with {:
+	errorDetected = false;
+:}
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null) 
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal PROGRAM, BREAK, CLASS, ELSE, CONST, IF, DO, WHILE, NEW, PRINT, READ, RETURN, VOID, EXTENDS, CONTINUE;
+terminal RECORD, TARABA, FINAL;
+terminal PLUS, MINUS, PUTA, KOSACRTA, PROCENAT, JEDNAKOST, NEJEDNAKOST, VECE, VECEJEDNAKO, MANJE, MANJEJEDNAKO;
+terminal AND, OR, DODELAVR, PLUSPLUS, MINUSMINUS, TACKAZAREZ, ZAREZ, TACKA;
+terminal OBICNA_ZAGRADA_L, OBICNA_ZAGRADA_D, UGLASTA_ZAGRADA_L, UGLASTA_ZAGRADA_D, VITICASTA_ZAGRADA_L, VITICASTA_ZAGRADA_D;
+terminal ENUM, SUPER, THIS, DVOTACKA, GOTO, PLUSPLUSPLUS, MAJMUNCE, KAPICA;
+
+terminal String ident, boolConst;
+terminal Integer numConst;
+terminal Character charConst;
+
+nonterminal ConstDecl ConstDecl;
+nonterminal VarDecl VarDecl;
+nonterminal Constructor Constructor;
+nonterminal ConstructorDecl ConstructorDecl;
+nonterminal FormPars FormPars;
+nonterminal SingleStatement SingleStatement;
+nonterminal Statement Statement;
+nonterminal ConstSome ConstSome;
+nonterminal Statements Statements;
+nonterminal ElseA ElseA;
+nonterminal RestDesignator RestDesignator;
+nonterminal ActPars ActPars;
+nonterminal Condition Condition;
+nonterminal CondTerm CondTerm;
+nonterminal CondFact CondFact;
+nonterminal TermFragment TermFragment;
+nonterminal FactorFrag2 FactorFrag2;
+nonterminal DesExpr DesExpr;
+nonterminal Assignop Assignop;
+nonterminal Relop Relop;
+nonterminal Addop Addop;
+nonterminal Mulop Mulop;
+nonterminal Zagrade Zagrade;
+nonterminal FormParsA FormParsA;
+nonterminal ExtendsA ExtendsA;
+nonterminal NumConstA NumConstA;
+nonterminal MinusA MinusA;
+nonterminal CondA CondA;
+nonterminal DeclList DeclList;
+nonterminal ConstDeclList ConstDeclList;
+nonterminal VarList VarList;
+nonterminal VarDeclList VarDeclList;
+nonterminal StatementList StatementList;
+nonterminal MethodDeclList MethodDeclList;
+nonterminal FormList FormList;
+nonterminal OrList OrList;
+nonterminal AndList AndList;
+nonterminal ExprFragmentList ExprFragmentList;
+nonterminal DesList DesList;
+nonterminal Matched Matched;
+nonterminal Unmatched Unmatched;
+nonterminal CondFact1 CondFact1;
+nonterminal CondFact2 CondFact2;
+nonterminal DoStatement DoStatement;
+nonterminal WhileStatement WhileStatement;
+nonterminal IfUslov IfUslov;
+nonterminal Zagrade2 Zagrade2;
+nonterminal Expop Expop;
+nonterminal BaseExpFragment BaseExpFragment;
+nonterminal FinalDef FinalDef;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj ProgName, Program, MethodDecl, MethodTypeName, ClassDecl, ClassDeclName, RecordDecl, RecordDeclName, Designator;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, DesignatorStatement, BaseExp;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, TypeWhat, Expr, ExprA, Term, ExprInt; 
+												
+/********** glavni deo ...... **********/
+
+//Program = "program" ident {ConstDecl | VarDecl | ClassDecl | RecordDecl} "{" {MethodDecl} "}"
+Program ::= (Program) PROGRAM ProgName:p DeclList:D1 VITICASTA_ZAGRADA_L MethodDeclList:M2 VITICASTA_ZAGRADA_D {: RESULT=new Program(p, D1, M2); RESULT.setLine(pleft); :} ;
+
+ProgName ::= (ProgName) ident:progName {: RESULT=new ProgName(progName); RESULT.setLine(progNameleft); :};
+
+DeclList ::= (DeclListConst) DeclList:D1 ConstDecl:C2 {: RESULT=new DeclListConst(D1, C2); RESULT.setLine(D1left); :} 
+			| (DeclListVar) DeclList:D1 VarDecl:V2 {: RESULT=new DeclListVar(D1, V2); RESULT.setLine(D1left); :} 
+			| (DeclListClass) DeclList:D1 ClassDecl:C2 {: RESULT=new DeclListClass(D1, C2); RESULT.setLine(D1left); :} 
+			| (DeclListRecord) DeclList:D1 RecordDecl:R2 {: RESULT=new DeclListRecord(D1, R2); RESULT.setLine(D1left); :}
+			| (NoDecl) {: RESULT=new NoDecl(); :} /* epsilon */
+			;
+
+MethodDeclList ::= (MethodDeclListYes) MethodDeclList:M1 MethodDecl:M2 {: RESULT=new MethodDeclListYes(M1, M2); RESULT.setLine(M1left); :}
+				| (NoMethodDecl) {: RESULT=new NoMethodDecl(); :} /* epsilon */
+				;
+				
+// ConstDecl = "const" Type ident"="(numConst | charConst | boolConst) {, ident "=" (numConst | charConst | boolConst)} ";"
+ConstDecl ::= (ConstDeclNum) CONST Type:T1 ident:constName DODELAVR numConst:value ConstDeclList:C2 TACKAZAREZ {: RESULT=new ConstDeclNum(T1, constName, value, C2); RESULT.setLine(T1left); :}
+			| (ConstDeclChar) CONST Type:T1 ident:constName DODELAVR charConst:value ConstDeclList:C2 TACKAZAREZ {: RESULT=new ConstDeclChar(T1, constName, value, C2); RESULT.setLine(T1left); :}
+			| (ConstDeclBool) CONST Type:T1 ident:constName DODELAVR boolConst:value ConstDeclList:C2 TACKAZAREZ {: RESULT=new ConstDeclBool(T1, constName, value, C2); RESULT.setLine(T1left); :} ;
+
+ConstDeclList ::= (ConstDeclListNum) ConstDeclList:C1 ZAREZ ident:constName DODELAVR numConst:value {: RESULT=new ConstDeclListNum(C1, constName, value); RESULT.setLine(C1left); :}
+			| (ConstDeclListChar) ConstDeclList:C1 ZAREZ ident:constName DODELAVR charConst:value {: RESULT=new ConstDeclListChar(C1, constName, value); RESULT.setLine(C1left); :}
+			| (ConstDeclListBool) ConstDeclList:C1 ZAREZ ident:constName DODELAVR boolConst:value {: RESULT=new ConstDeclListBool(C1, constName, value); RESULT.setLine(C1left); :}
+			| (NoConstDecl) {: RESULT=new NoConstDecl(); :} /* epsilon */
+			;
+
+// VarDecl = Type ident ["[" "]"] {"," ident ["[" "]"]} ";"			
+VarDecl ::= (VarDecl) FinalDef:F1 Type:varType ident:varName Zagrade:Z2 VarList:V3 TACKAZAREZ {: RESULT=new VarDecl(F1, varType, varName, Z2, V3); RESULT.setLine(F1left); :} ;
+
+FinalDef ::= (FinalDefYes) FINAL {: RESULT=new FinalDefYes(); :}
+			| (FinalDefNo) {: RESULT=new FinalDefNo(); :} /* epsilon */
+			;
+
+Zagrade ::= (ZagradeOne) Zagrade:Z1 UGLASTA_ZAGRADA_L UGLASTA_ZAGRADA_D {: RESULT=new ZagradeOne(Z1); RESULT.setLine(Z1left); :}
+			| (ZagradeNoOne) {: RESULT=new ZagradeNoOne(); :} /* epsilon */
+			;
+
+VarList ::= (VarListYes) VarList:V1 ZAREZ ident:VarName Zagrade:Z2 {: RESULT=new VarListYes(V1, VarName, Z2); RESULT.setLine(V1left); :}
+			| (NoVarList) {: RESULT=new NoVarList(); :} /* epsilon */
+			;
+
+// ClassDecl = "class" ident ["extends" Type] "{" {VarDecl} ["{" [ConstructorDecl] {MethodDecl} "}"] "}"			
+ClassDecl ::= (ClassDecl) CLASS ClassDeclName:C1 ExtendsA:E2 VITICASTA_ZAGRADA_L VarDeclList:V3 Constructor:C4 VITICASTA_ZAGRADA_D {: RESULT=new ClassDecl(C1, E2, V3, C4); RESULT.setLine(C1left); :};
+
+ClassDeclName ::= (ClassDeclName) ident:className {: RESULT=new ClassDeclName(className); RESULT.setLine(classNameleft); :};
+
+ExtendsA ::= (ExtendsOne) EXTENDS Type:T1 {: RESULT=new ExtendsOne(T1); RESULT.setLine(T1left); :} 
+			| (ExtendsNoOne) {: RESULT=new ExtendsNoOne(); :} /* epsilon */
+			;
+
+VarDeclList ::= (VarDeclListYes) VarDeclList:V1 VarDecl:V2 {: RESULT=new VarDeclListYes(V1, V2); RESULT.setLine(V1left); :}
+			| (NoVarDeclList) {: RESULT=new NoVarDeclList(); :} /* epsilon */
+			;
+			
+Constructor ::= (ConstructorYes) VITICASTA_ZAGRADA_L MethodDeclList:M1 VITICASTA_ZAGRADA_D {: RESULT=new ConstructorYes(M1); RESULT.setLine(M1left); :}
+			| (NoConstructor) {: RESULT=new NoConstructor(); :} /* epsilon */
+			;
+
+// RecordDecl = "record" ident "{" {VarDecl} "}" * za B i C nivo			
+RecordDecl ::= (RecordDecl) RECORD RecordDeclName:R1 VITICASTA_ZAGRADA_L VarDeclList:V2 VITICASTA_ZAGRADA_D {: RESULT=new RecordDecl(R1, V2); RESULT.setLine(R1left); :};
+
+RecordDeclName ::= (RecordDeclName) ident:RecordName {: RESULT=new RecordDeclName(RecordName); RESULT.setLine(RecordNameleft); :};
+
+// ConstructorDecl = ident "(" ")" {VarDecl} "{" {Statement} "}". * za C nivo
+ConstructorDecl ::= (ConstructorDecl) ident:i1 OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D VarDeclList:V2 VITICASTA_ZAGRADA_L StatementList:S3 VITICASTA_ZAGRADA_D {: RESULT=new ConstructorDecl(i1, V2, S3); RESULT.setLine(i1left); :};
+
+StatementList ::= (StatementListYes) StatementList:S1 Statement:S2 {: RESULT=new StatementListYes(S1, S2); RESULT.setLine(S1left); :}
+				| (NoStatementList) {: RESULT=new NoStatementList(); :} /* epsilon*/
+				;
+
+//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} "{" {Statement} "}"
+MethodDecl ::= (MethodDecl) MethodTypeName:M1 OBICNA_ZAGRADA_L FormParsA:F2 OBICNA_ZAGRADA_D VarDeclList:V3 VITICASTA_ZAGRADA_L StatementList:S4 VITICASTA_ZAGRADA_D {: RESULT=new MethodDecl(M1, F2, V3, S4); RESULT.setLine(M1left); :};
+
+MethodTypeName ::= (MethodTypeName) TypeWhat:retType ident:methName {: RESULT=new MethodTypeName(retType, methName); RESULT.setLine(retTypeleft); :};
+
+TypeWhat ::= (TypeWhatType) Type:typeName {: RESULT=new TypeWhatType(typeName); RESULT.setLine(typeNameleft); :} | (TypeWhatVoid) VOID {: RESULT=new TypeWhatVoid(); :};
+
+FormParsA ::= (FormParsOne) FormPars:F1 {: RESULT=new FormParsOne(F1); RESULT.setLine(F1left); :}
+			| (FormParsNoOne) {: RESULT=new FormParsNoOne(); :} /* epsilon */
+			;
+			
+// FormPars = Type ident ["[" "]"] {"," Type ident ["[" "]"]}
+FormPars ::= (FormPars) Type:varType ident:varName Zagrade:Z1 FormList:F2 {: RESULT=new FormPars(varType, varName, Z1, F2); RESULT.setLine(varTypeleft); :};
+
+FormList ::= (FormListYes) FormList:F1 ZAREZ Type:varType ident:varName Zagrade:Z2 {: RESULT=new FormListYes(F1, varType, varName, Z2); RESULT.setLine(F1left); :}
+			| (NoFormList) {: RESULT=new NoFormList(); :} /* epsilon */
+			;	
+			
+// Type = ident
+Type ::= (Type) ident:typeName {: RESULT=new Type(typeName); RESULT.setLine(typeNameleft); :};
+
+// Statement = [Label ":"] SingleStatement * za A nivo | Statements.
+Statement ::= (MatchedStm) Matched:M1 {: RESULT=new MatchedStm(M1); RESULT.setLine(M1left); :} 
+			| (UnmatchedStm) Unmatched:U1 {: RESULT=new UnmatchedStm(U1); RESULT.setLine(U1left); :}
+			;
+//			(StatementOne) SingleStatement
+//			| (StatementMore) Statements
+//			;
+
+//SingleStatement = DesignatorStatement ";" 
+//		| "if" "(" Condition ")" Statement ["else" Statement] 
+//		| "do" Statement "while " "(" Condition ")" ";"
+//		| "break" ";"
+//		| "continue" ";"
+//		| "return" [Expr] ";"
+//		| "read" "(" Designator ")" ";"
+//		| "print" "(" Expr ["," numConst] ")" ";"
+//		| "goto" Label ";" * za nivo A
+
+//SingleStatement ::= 
+
+Unmatched ::= (UnmatchedIf) IfUslov:I1 OBICNA_ZAGRADA_L Condition:C2 OBICNA_ZAGRADA_D Statement:S3 {: RESULT=new UnmatchedIf(I1, C2, S3); RESULT.setLine(I1left); :}
+			| (UnmatchedIfElse) IfUslov:I1 OBICNA_ZAGRADA_L Condition:C2 OBICNA_ZAGRADA_D Matched:M3 ELSE Unmatched:U4 {: RESULT=new UnmatchedIfElse(I1, C2, M3, U4); RESULT.setLine(I1left); :}
+		 	;
+
+Matched ::= (SingleStatementDes) DesignatorStatement:D1 TACKAZAREZ {: RESULT=new SingleStatementDes(D1); RESULT.setLine(D1left); :}
+			| (SingleStatementIf) IfUslov:I1 OBICNA_ZAGRADA_L Condition:C2 OBICNA_ZAGRADA_D Matched:M3 ELSE Matched:M4 {: RESULT=new SingleStatementIf(I1, C2, M3, M4); RESULT.setLine(I1left); :}
+			| (SingleStatementDo) DoStatement:D1 Statement:S2 WhileStatement:W3 OBICNA_ZAGRADA_L Condition:C4 OBICNA_ZAGRADA_D TACKAZAREZ {: RESULT=new SingleStatementDo(D1, S2, W3, C4); RESULT.setLine(D1left); :}
+			| (SingleStatementBreak) BREAK TACKAZAREZ {: RESULT=new SingleStatementBreak(); :}
+			| (SingleStatementContinue) CONTINUE TACKAZAREZ {: RESULT=new SingleStatementContinue(); :}
+			| (SingleStatementReturn) RETURN Expr:E1 TACKAZAREZ {: RESULT=new SingleStatementReturn(E1); RESULT.setLine(E1left); :}
+			| (SingleStatementReturnNothing) RETURN TACKAZAREZ {: RESULT=new SingleStatementReturnNothing(); :}
+			| (SingleStatementRead) READ OBICNA_ZAGRADA_L Designator:D1 OBICNA_ZAGRADA_D TACKAZAREZ {: RESULT=new SingleStatementRead(D1); RESULT.setLine(D1left); :}
+			| (SingleStatementPrint) PRINT OBICNA_ZAGRADA_L Expr:E1 NumConstA:N2 OBICNA_ZAGRADA_D TACKAZAREZ {: RESULT=new SingleStatementPrint(E1, N2); RESULT.setLine(E1left); :}
+			| (ErrorStmt) error TACKAZAREZ:l
+			{: parser.report_error("Izvrsen oporavak do ; u liniji " + lleft, null);  :} {: RESULT=new ErrorStmt(); :}
+			| (MatchedStatements) Statements:S1 {: RESULT=new MatchedStatements(S1); RESULT.setLine(S1left); :}
+			;
+
+IfUslov ::= (IfUslov) IF {: RESULT=new IfUslov(); :};
+DoStatement ::= (DoStatement) DO {: RESULT=new DoStatement(); :};
+WhileStatement ::= (WhileStatement) WHILE {: RESULT=new WhileStatement(); :};
+
+ExprA ::= (ExprOne) Expr:E1 {: RESULT=new ExprOne(E1); RESULT.setLine(E1left); :} 
+			| (ExprNoOne) {: RESULT=new ExprNoOne(); :} /* epsilon */
+			;
+
+NumConstA ::= (NumConstOne) ZAREZ numConst:n1 {: RESULT=new NumConstOne(n1); RESULT.setLine(n1left); :}
+			| (NumConstNoOne) {: RESULT=new NumConstNoOne(); :} /* epsilon */
+			;
+
+// Statements = "{" {Statement} "}"								
+Statements ::= (Statements) VITICASTA_ZAGRADA_L StatementList:S1 VITICASTA_ZAGRADA_D {: RESULT=new Statements(S1); RESULT.setLine(S1left); :};
+
+// DesignatorStatement = Designator (Assignop Expr | "(" [ActPars] ")" | "++" | "--")
+DesignatorStatement ::= (DesAssign) Designator:D1 Assignop:A2 Expr:E3 {: RESULT=new DesAssign(D1, A2, E3); RESULT.setLine(D1left); :} 
+					| (DesZagrade) Designator:D1 OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D {: RESULT=new DesZagrade(D1); RESULT.setLine(D1left); :} 
+					| (DesActPars) Designator:D1 OBICNA_ZAGRADA_L ActPars:A2 OBICNA_ZAGRADA_D {: RESULT=new DesActPars(D1, A2); RESULT.setLine(D1left); :} 
+					| (DesPlus) Designator:D1 PLUSPLUS {: RESULT=new DesPlus(D1); RESULT.setLine(D1left); :} 
+					| (DesPlusPlus) Designator:D1 PLUSPLUSPLUS {: RESULT=new DesPlusPlus(D1); RESULT.setLine(D1left); :}
+					| (DesMinus) Designator:D1 MINUSMINUS {: RESULT=new DesMinus(D1); RESULT.setLine(D1left); :}
+					| (DesTaraba) Designator:D1 TARABA {: RESULT=new DesTaraba(D1); RESULT.setLine(D1left); :}
+					;
+
+// ActPars = Expr {"," Expr}			
+ActPars ::= (ActParsOne) Expr:E1 {: RESULT=new ActParsOne(E1); RESULT.setLine(E1left); :}
+			| (ActParsMany) ActPars:A1 ZAREZ Expr:E2 {: RESULT=new ActParsMany(A1, E2); RESULT.setLine(A1left); :}
+			;
+
+// Condition = CondTerm {"||" CondTerm}
+Condition ::= (Condition) CondTerm:C1 OrList:O2 {: RESULT=new Condition(C1, O2); RESULT.setLine(C1left); :};
+
+OrList ::= (OrListYes) OrList:O1 OR CondTerm:C2 {: RESULT=new OrListYes(O1, C2); RESULT.setLine(O1left); :} 
+			| (NoOrList) {: RESULT=new NoOrList(); :} /* epsilon */
+			;
+
+// CondTerm = CondFact {"&&" CondFact}
+CondTerm ::= (CondTerm) CondFact:C1 AndList:A2 {: RESULT=new CondTerm(C1, A2); RESULT.setLine(C1left); :};
+
+AndList ::= (AndListYes) AndList:A1 AND CondFact:C2 {: RESULT=new AndListYes(A1, C2); RESULT.setLine(A1left); :}
+			| (NoAndList) {: RESULT=new NoAndList(); :} /* epsilon */
+			;
+
+// CondFact = Expr [Relop Expr]		
+CondFact ::= (CondFactOne) Expr:E1 {: RESULT=new CondFactOne(E1); RESULT.setLine(E1left); :}
+			| (CondFactTwo) Expr:leftExpr Relop:R1 Expr:RightExpr {: RESULT=new CondFactTwo(leftExpr, R1, RightExpr); RESULT.setLine(leftExprleft); :}
+			;
+
+// Expr = ["-"] Term {Addop Term}
+Expr ::= (Expr) MinusA:M1 Term:T2 ExprFragmentList:E3 {: RESULT=new Expr(M1, T2, E3); RESULT.setLine(M1left); :};
+
+MinusA ::= (MinusOne) MINUS {: RESULT=new MinusOne(); :} 
+			| (MinusNoOne) {: RESULT=new MinusNoOne(); :} /* epsilon */
+			;
+
+ExprFragmentList ::= (ExprFragmentListYes) ExprFragmentList:E1 Addop:A2 Term:T3 {: RESULT=new ExprFragmentListYes(E1, A2, T3); RESULT.setLine(E1left); :} 
+			| (NoExprFragmentList) {: RESULT=new NoExprFragmentList(); :} /* epsilon */
+			;
+
+//Term = Factor {Mulop Factor}		
+Term ::= (Term) Factor:F1 TermFragment:T2 {: RESULT=new Term(F1, T2); RESULT.setLine(F1left); :};
+
+TermFragment ::= (TermFragList) TermFragment:T1 Mulop:M2 Factor:F3 {: RESULT=new TermFragList(T1, M2, F3); RESULT.setLine(T1left); :}
+			| (NoTermFragment) {: RESULT=new NoTermFragment(); :} /* epsilon */
+			;
+
+//Factor = BaseExp {Expop BaseExp}
+Factor ::= (Factor) BaseExp:B1 BaseExpFragment:B2 {: RESULT=new Factor(B1, B2); RESULT.setLine(B1left); :};
+
+BaseExpFragment ::= (BaseExpFragmentList) BaseExpFragment:B1 Expop:E2 BaseExp:B3 {: RESULT=new BaseExpFragmentList(B1, E2, B3); RESULT.setLine(B1left); :}
+			| (NoBaseExpFragment) {: RESULT=new NoBaseExpFragment(); :} /* epsilon */
+			;
+
+
+//Expop = "^"
+Expop ::= (KapicaExpr) KAPICA {: RESULT=new KapicaExpr(); :};
+
+//BaseExp = Designator ["(" [ActPars] ")"]
+//		| numConst
+//		| charConst
+//		| boolConst
+//		| "new" Type ["[" Expr "]"]
+//		| "(" Expr ")"
+BaseExp ::= (FactorDes) Designator:D1 {: RESULT=new FactorDes(D1); RESULT.setLine(D1left); :}
+			| (FactorDesZagr) Designator:D1 OBICNA_ZAGRADA_L OBICNA_ZAGRADA_D {: RESULT=new FactorDesZagr(D1); RESULT.setLine(D1left); :}
+			| (FactorDesActPars) Designator:D1 OBICNA_ZAGRADA_L ActPars:A2 OBICNA_ZAGRADA_D {: RESULT=new FactorDesActPars(D1, A2); RESULT.setLine(D1left); :}
+			| (FactorNum) numConst:value {: RESULT=new FactorNum(value); RESULT.setLine(valueleft); :}
+			| (FactorChar) charConst:value {: RESULT=new FactorChar(value); RESULT.setLine(valueleft); :}
+			| (FactorBool) boolConst:value {: RESULT=new FactorBool(value); RESULT.setLine(valueleft); :}
+			| (FactorType) NEW Type:T1 Zagrade2:Z2 {: RESULT=new FactorType(T1, Z2); RESULT.setLine(T1left); :}
+			| (FactorExpr) OBICNA_ZAGRADA_L ExprInt:E1 OBICNA_ZAGRADA_D {: RESULT=new FactorExpr(E1); RESULT.setLine(E1left); :}
+			| (FactorTaraba) Designator:D1 TARABA {: RESULT=new FactorTaraba(D1); RESULT.setLine(D1left); :}
+			;
+
+Zagrade2 ::= (ZagradeOne2) Zagrade2:Z1 UGLASTA_ZAGRADA_L ExprInt:E2 UGLASTA_ZAGRADA_D {: RESULT=new ZagradeOne2(Z1, E2); RESULT.setLine(Z1left); :}
+			| (ZagradeNoOne2) {: RESULT=new ZagradeNoOne2(); :} /* epsilon */
+			;
+
+ConstSome ::= (ConstSomeNum) numConst:value {: RESULT=new ConstSomeNum(value); RESULT.setLine(valueleft); :} 
+			| (ConstSomeChar) charConst:value {: RESULT=new ConstSomeChar(value); RESULT.setLine(valueleft); :} 
+			| (ConstSomeBool) boolConst:value {: RESULT=new ConstSomeBool(value); RESULT.setLine(valueleft); :} ;
+
+// Designator = ident {"." ident | "[" Expr "]"}
+Designator ::= (DesignatorOne) ident:Name {: RESULT=new DesignatorOne(Name); RESULT.setLine(Nameleft); :}
+			| (DesignatorField) Designator:D1 TACKA ident:fieldName {: RESULT=new DesignatorField(D1, fieldName); RESULT.setLine(D1left); :}
+			| (DesignatorArray) Designator:D1 UGLASTA_ZAGRADA_L ExprInt:E2 UGLASTA_ZAGRADA_D {: RESULT=new DesignatorArray(D1, E2); RESULT.setLine(D1left); :}
+			;
+
+ExprInt ::= (ExprInt) Expr:E1 {: RESULT=new ExprInt(E1); RESULT.setLine(E1left); :};
+
+// Label = ident
+//Label ::= (Label) ident;
+
+// Assignop = "="
+Assignop ::= (Assignop) DODELAVR {: RESULT=new Assignop(); :};
+
+// Relop = "==" | "!=" | ">" | ">=" | "<" | "<="
+Relop ::= (RelopJed) JEDNAKOST {: RESULT=new RelopJed(); :} 
+			| (RelopNejed) NEJEDNAKOST {: RESULT=new RelopNejed(); :} 
+			| (RelopVece) VECE {: RESULT=new RelopVece(); :} 
+			| (RelopVecJed) VECEJEDNAKO {: RESULT=new RelopVecJed(); :} 
+			| (RelopManje) MANJE {: RESULT=new RelopManje(); :} 
+			| (RelopManjeJed) MANJEJEDNAKO {: RESULT=new RelopManjeJed(); :}
+			;
+
+// Addop = "+" | "-"
+Addop ::= (AddopPlus) PLUS {: RESULT=new AddopPlus(); :} 
+		| (AddopMinus) MINUS {: RESULT=new AddopMinus(); :}
+		;
+
+// Mulop = "*" | "/" | "%"
+Mulop ::= (MulopPuta) PUTA {: RESULT=new MulopPuta(); :} 
+		| (MulopKosa) KOSACRTA {: RESULT=new MulopKosa(); :} 
+		| (MulopProc) PROCENAT {: RESULT=new MulopProc(); :}
+		| (MulopMajmunce) MAJMUNCE {: RESULT=new MulopMajmunce(); :} 
+		;

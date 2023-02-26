@@ -1,0 +1,34 @@
+// Test301
+
+program test301
+
+const int dva = 2;
+	int niz[];
+	
+{
+	void main()
+		int i;
+	{ 
+		i = 0;
+		niz = new int[6];
+		do{
+			niz[i] = i + 12;
+			i++;
+		} while(i < 6);
+		i = 0;
+		do{
+			print(niz[i]);
+			i++;
+		} while(i < 6);
+		print(eol);
+		niz#;
+		i = 0;
+		do{
+			print(niz[i]);
+			i++;
+		} while(i < 6);
+		
+	}
+}
+
+
